@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin-bottom:10px;">
+  <a class="button" href="{% url 'registry:create' %}">+ Новая запись</a>
+  {% if can_export %}
+    <a class="button" href="{% url 'registry:export_csv' %}">Выгрузить CSV</a>
+    <a class="button" href="/admin/">Админка</a>
+  {% endif %}
+</div>
+
+<form method="get" style="margin-bottom:10px;">
+  <input name="q" value="{{ q }}" placeholder="поиск: здание/мтр/ответственный/работы" style="width:420px;">
+  <button type="submit">Найти</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Здание</th><th>Раздел</th><th>МТР</th><th>Кол-во</th><th>Работы</th>
+      <th>АН*</th><th>ГИП*</th><th>Оплачено</th><th>Сроки</th><th>Выполнено</th><th>Ответственный</th><th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for e in entries %}
+    <tr>
+      <td>{{ e.id }}</td>
+      <td>{{ e.building }}</td>
+      <td>{{ e.section }}</td>
+      <td>{{ e.mtr }}</td>
+      <td>{{ e.quantity }}</td>
+      <td style="white-space:pre-wrap">{{ e.works|default:"" }}</td>
+
+      <td>
+        {% if e.an_approved %}Да{% else %}Нет{% endif %}
+        {% if can_approve_an and not e.an_approved %}
+          <div><a href="{% url 'registry:approve_an' e.id %}">Согласовать</a></div>
+        {% endif %}
+      </td>
+      <td>
+        {% if e.gip_approved %}Да{% else %}Нет{% endif %}
+        {% if can_approve_gip and not e.gip_approved %}
+          <div><a href="{% url 'registry:approve_gip' e.id %}">Согласовать</a></div>
+        {% endif %}
+      </td>
+
+      <td>{{ e.paid_date|date:"Y-m-d" }}</td>
+      <td>{{ e.delivery_deadline|date:"Y-m-d" }}</td>
+      <td>{% if e.done %}Да{% else %}Нет{% endif %}</td>
+      <td>{{ e.responsible }}</td>
+      <td>
+        <a href="{% url 'registry:edit' e.id %}">Редактировать</a>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
